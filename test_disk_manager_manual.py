@@ -1,5 +1,6 @@
 import os
 from DiskManager import DiskManager, PageId  # Assuming PageId is a class
+from BufferManager import BufferManager
 
 class MockDbc:
     def __init__(self, dbpath, dm_maxfilesize, pageSize):

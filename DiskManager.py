@@ -4,6 +4,7 @@ from pageId import PageId
 class DiskManager:
     def __init__(self, dbc):
       self.dbc=dbc
+      self.free_pages = []
       
     
             
@@ -75,12 +76,14 @@ class DiskManager:
             
         
     
-    def ReadPage(self, pageID, buff):
+    def ReadPage(self, pageID):
         try:
             with open(f"./{self.dbc.dbpath}/BinData/F{pageID.FileIdx}.rsdb", "rb") as fichier:
                 fichier.seek(self.dbc.pageSize*pageID.PageIdx)
-
-                buff.extend(fichier.read(self.dbc.pageSize))
+                data = fichier.read(self.dbc.pageSize)
+                buff = bytearray()
+                buff[20:] = data
+                return buff
 
         except Exception as openFail:
             print(f"erreur d'ouverture de fichier = {openFail}")
@@ -101,7 +104,7 @@ class DiskManager:
          
            
     def SaveState(self):
-        data_dir = os.path.join(self.dbc.dbpath, "db.save")
+        data_dir = os.path.join(self.dbc.dbpath, "./DB_test/dm.save")
         os.makedirs(data_dir, exist_ok=True)
         
         

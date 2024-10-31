@@ -1,7 +1,9 @@
 class PageId:
+    
     def __init__(self, FileIdx, PageIdx ):
       self.FileIdx = FileIdx
       self.PageIdx = PageIdx
+
     def __str__(self):
         return f"FileIdx={self.FileIdx}, PageIdx={self.PageIdx}"
     
