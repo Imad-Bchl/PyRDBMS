@@ -1,6 +1,6 @@
 {
-    "dbpath": "C:\\Users\\dermo\\OneDrive\\Bureau\\UGA\\L2 UGA\\s4\\S4\\INF403\\agence.db"
-    "pagesize": 4096,
-    "dm_maxfilesize": 10485760
+    "dbpath": "./DB_test",
+    "pagesize": 1024,
+    "dm_maxfilesize": 4096
   }
   
