@@ -33,10 +33,8 @@ class DBConfig:
 
     def set_dm_maxfilesize(self, dm_maxfilesize):
         self.dm_maxfilesize = dm_maxfilesize
-        
-        #Le type de méthode LoadDBConfig : Vous l'avez définie comme une méthode classique de la classe, mais elle n'utilise pas l'instance (self).
-        #Cela signifie qu'elle devrait être définie comme une méthode statique (ou classe) en utilisant @staticmethod.......
-    
+
+
     @staticmethod    
     def load_db_config(file_path):
         
@@ -44,7 +42,7 @@ class DBConfig:
             with open(file_path, 'r') as file:
                 config=json.load(file)
 
-                return DBConfig(config["dbpath"] ,config["pageSize"] ,config["dm_maxfilesize"])
+                return DBConfig(config["dbpath"] ,config["pagesize"] ,config["dm_maxfilesize"])
             
         except Exception as openFail:
             print(f"erreur d'ouverture de fichier = {openFail}")
