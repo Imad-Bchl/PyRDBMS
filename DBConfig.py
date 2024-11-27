@@ -2,10 +2,12 @@ import json
 import os 
 
 class DBConfig:
-    def __init__(self, dbpath ,pageSize ,dm_maxfilesize):
+    def __init__(self, dbpath ,pageSize ,dm_maxfilesize,bm_buffercount,bm_policy):
         self.dbpath = dbpath
         self.pageSize=pageSize
         self.dm_maxfilesize=dm_maxfilesize
+        self.bm_buffercount=bm_buffercount
+        self.bm_policy=bm_policy
 
       # Méthode __repr__ pour la représentation en chaîne de l'objet
     def __repr__(self):
