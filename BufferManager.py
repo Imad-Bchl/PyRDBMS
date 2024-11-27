@@ -22,9 +22,9 @@ class BufferManager:
         
         
         if len(self.buffer_pool) >= self.buffer_capacity:
-            if replacement_policy == "LRU":
+            if self.replacement_policy == "LRU":
                 self.buffer_pool.pop(0)
-            elif replacement_policy == "MRU":
+            elif self.replacement_policy == "MRU":
                 self.buffer_pool.pop(-1)
         self.buffer_pool.append((pageId, buffer))
 
@@ -47,4 +47,10 @@ class BufferManager:
     def SetCurrentReplacementPolicy(self, policy):
         self.replacement_policy = policy
         
-
+    def FlushBuffers(self):
+        for pid, buffer, pin_count, dirty_flag in self.buffer_pool:
+            if dirty_flag:
+                self.disk_manager.WritePage(pid, buffer)
+                dirty_flag = False
+                self.buffer_pool[i] = (pid, buffer, pin_count, dirty_flag)
+        return
