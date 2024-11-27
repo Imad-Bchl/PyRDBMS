@@ -5,6 +5,8 @@ class BufferManager:
         self.db_config = db_config
         self.disk_manager = disk_manager
         self.buffer_pool = []
+        self.replacement_policy=self.db_config.bm_policy
+        self.buffer_capacity = self.db_config.bm_buffercount
 
     def GetPage(self, pageId):
         for i, (pid, buffer) in enumerate(self.buffer_pool):
@@ -16,9 +18,14 @@ class BufferManager:
     
         buffer = bytearray(self.db_config.pageSize)
         self.disk_manager.ReadPage(pageId, buffer)
-        #ToDo : Implement the buffer replacement policy and buffer capacity 
+        
+        
+        
         if len(self.buffer_pool) >= self.buffer_capacity:
-            self.buffer_pool.pop(0)
+            if replacement_policy == "LRU":
+                self.buffer_pool.pop(0)
+            elif replacement_policy == "MRU":
+                self.buffer_pool.pop(-1)
         self.buffer_pool.append((pageId, buffer))
 
         return buffer
@@ -36,4 +43,8 @@ class BufferManager:
 
                 self.buffer_pool[i] = (pid, buffer, pin_count, dirty_flag)
                 return 
+            
+    def SetCurrentReplacementPolicy(self, policy):
+        self.replacement_policy = policy
+        
 
