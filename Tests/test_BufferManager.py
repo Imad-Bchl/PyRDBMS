@@ -45,7 +45,7 @@ class TestBufferManager(unittest.TestCase):
     #     self.buffer_manager.buffer_pool.append((page_id, buffer, 0, True))
     #     self.disk_manager.WritePage = MagicMock()
     #     self.buffer_manager.FlushBuffers()
-    #     self.disk_manager.WritePage.assert_called_once_with(page_id, buffer)
+    #     self.disk_manager.WritePage.assert_called_once_with(page_id, buffer)x
 
 if __name__ == '__main__':
     unittest.main()
