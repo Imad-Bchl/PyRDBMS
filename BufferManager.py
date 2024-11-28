@@ -92,14 +92,16 @@ class BufferManager:
         return indice 
 
     def FreePage(self, pageId, valdirty):
-        for i, buffer in enumerate(self.buffer_pool):
-            if buffer[:4] == pageId.FileIdx and buffer[4:8] == pageId.PageIdx :
-                if buffer[8:12] == 0 and valdirty == 0:
-                    buffer [:4] = 255
-                    buffer [4:8] = 255
-                if buffer[8:12] > 0:
-                    print("cette page est en cours d'utilisation elle ne peut pas etre supprimer")
-                if buffer[8:12] == 0 and valdirty == 1:
-                    #we have to write the page calling the write function of the disk manager
-                    buffer [:4] = 255
-                    buffer [4:8] = 255
+        for i, (pid, buffer, pin_count, dirty_flag) in enumerate(self.buffer_pool):
+            if pid == pageId:
+                if pin_count > 0:
+                    pin_count -= 1
+                else:
+                    print("Erreur : pin_count déjà à zéro !")
+
+                if valdirty:
+                    dirty_flag = True
+
+                self.buffer_pool[i] = (pid, buffer, pin_count, dirty_flag)
+                return 
+
