@@ -20,9 +20,16 @@ __pycache__/
 *.tmp
 *.bak
 
+
 # Ignore environment files
 .env
 *.env
 
 # Ignore virtual environments
 venv/
+
+# Ignore Python cache directories
+__pycache__/
+
+# Ignore compiled Python files
+*.pyc
