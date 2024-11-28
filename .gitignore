@@ -1,0 +1,35 @@
+__pycache__/DBConfig.cpython-310.pyc
+__pycache__/DiskManager.cpython-310.pyc
+__pycache__/pageId.cpython-310.pyc
+__pycache__/test_disk_manager_manual.cpython-310-pytest-7.4.0.pyc
+__pycache__/test_mauel.cpython-310-pytest-7.4.0.pyc
+Tests/__pycache__/test_dbconfig.cpython-310-pytest-7.4.0.pyc
+Tests/__pycache__/test_DiskManager.cpython-310-pytest-7.4.0.pyc
+__pycache__/BufferManager.cpython-310.pyc
+__pycache__/BufferManager.cpython-310.pyc
+__pycache__/BufferManager.cpython-310.pyc
+
+
+# Ignore Python cache directories
+__pycache__/
+
+# Ignore pytest cache
+.pytest_cache/
+# Ignore logs and temp files
+*.log
+*.tmp
+*.bak
+
+
+# Ignore environment files
+.env
+*.env
+
+# Ignore virtual environments
+venv/
+
+# Ignore Python cache directories
+__pycache__/
+
+# Ignore compiled Python files
+*.pyc

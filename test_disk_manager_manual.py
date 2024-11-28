@@ -64,3 +64,4 @@ def cleanup_test_files(db_config):
 
 if __name__ == '__main__':
     manual_test_disk_manager()
+

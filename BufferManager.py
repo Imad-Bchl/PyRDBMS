@@ -92,6 +92,7 @@ class BufferManager:
         return indice 
 
     def FreePage(self, pageId, valdirty):
+
         for i, buffer in enumerate(self.buffer_pool):
             if buffer[:4] == pageId.FileIdx and buffer[4:8] == pageId.PageIdx :
                 if buffer[8:12] == 0 and valdirty == 0:
@@ -105,3 +106,4 @@ class BufferManager:
                     disk_manager.WritePage(pageTemp,buffer)
                     buffer [:4] = 255
                     buffer [4:8] = 255
+

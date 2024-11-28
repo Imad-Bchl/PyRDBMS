@@ -1,3 +1,4 @@
+import math
 import os
 from pageId import PageId
 
@@ -31,10 +32,12 @@ class DiskManager:
     
                     # Calculate current number of pages in the last file
                     file_size = os.path.getsize(last_file_path)
-                    current_pages_in_file = file_size // self.dbc.pageSize
-    
+                    current_pages_in_file = file_size / self.dbc.pageSize
+                    current_pages_in_file = int(math.ceil(current_pages_in_file))
+                    
+                    
                     # Check if the last file can accommodate a new page
-                    if current_pages_in_file < self.dbc.dm_maxfilesize:
+                    if current_pages_in_file < ( self.dbc.dm_maxfilesize // self.dbc.pageSize):
 
 
                         with open(last_file_path, "ab") as file:
@@ -70,8 +73,9 @@ class DiskManager:
             
         
     def DeallocPage (self,PageId):
-        self.free_pages.append(PageId)
-        self.SaveState()
+        if PageId not in self.free_pages:
+            self.free_pages.append(PageId)
+            self.SaveState()
             
             
         
