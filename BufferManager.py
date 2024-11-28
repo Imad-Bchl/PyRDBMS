@@ -101,5 +101,7 @@ class BufferManager:
                     print("cette page est en cours d'utilisation elle ne peut pas etre supprimer")
                 if buffer[8:12] == 0 and valdirty == 1:
                     #we have to write the page calling the write function of the disk manager
+                    pageId pageTemp = new pageId(struct.unpack('i',buffer[:4])[0],struct.unpack('i',buffer[4:8])[0])
+                    disk_manager.WritePage(pageTemp,buffer)
                     buffer [:4] = 255
                     buffer [4:8] = 255
