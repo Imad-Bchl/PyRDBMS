@@ -1,56 +1,105 @@
-import json
+import time
+import datetime
+import struct
+from DiskManager import DiskManager
+from pageId import PageId
 
 class BufferManager:
-    def __init__(self, db_config, disk_manager):
-        self.db_config = db_config
+    def __init__(self, dbConfig, disk_manager):
+        self.db_config = dbConfig
         self.disk_manager = disk_manager
-        self.buffer_pool = []
-        self.replacement_policy=self.db_config.bm_policy
-        self.buffer_capacity = self.db_config.bm_buffercount
+        self.bm_policy = dbConfig.bm_policy
+        self.buffer_pool = [bytearray([255]*20) for _ in range(self.db_config.bm_buffercount)]
+        new_epoch = datetime.datetime(2024, 10, 1)
+        self.epoch_difference = (new_epoch - datetime.datetime(1970, 1, 1)).total_seconds()
 
     def GetPage(self, pageId):
-        for i, (pid, buffer) in enumerate(self.buffer_pool):
-            if pid == pageId:
-                self.buffer_pool.append(self.buffer_pool.pop(i))
-                return buffer
-    #If the page is not in the buffer pool 
-    # the buffer manager reads the page from the disk manager and adds it to the buffer pool.
-    
-        buffer = bytearray(self.db_config.pageSize)
-        self.disk_manager.ReadPage(pageId, buffer)
-        
-        
-        
-        if len(self.buffer_pool) >= self.buffer_capacity:
-            if self.replacement_policy == "LRU":
-                self.buffer_pool.pop(0)
-            elif self.replacement_policy == "MRU":
-                self.buffer_pool.pop(-1)
-        self.buffer_pool.append((pageId, buffer))
+        for i,buffer in enumerate(self.buffer_pool):
+            if struct.unpack('i', buffer[:4])[0] == pageId.FileIdx and struct.unpack('i', buffer[4:8])[0] == pageId.PageIdx:
+                buffer[16:20]= (time.time() - self.epoch_difference)
+                return i
 
-        return buffer
+        for i,buffer in enumerate(self.buffer_pool):
+            if struct.unpack('i', buffer[:4])[0] == -1:
+                buffer[:4] = struct.pack('i', pageId.FileIdx) 
+                buffer[4:8] = struct.pack('i', pageId.PageIdx)
+                buffer[8:12] = struct.pack('i', 0) 
+                buffer[12:16] = struct.pack('i', 0) 
+                buffer[16:20] = struct.pack('f', float((time.time() - self.epoch_difference)*1000)) 
+                buffer1 = self.disk_manager.ReadPage(pageId)
+                buffer[20:] = buffer1
+                #buffer[120:] = lecture de la page du fichier)
+                return i
+
+        if(self.bm_policy == "LRU"):
+            NBuff = self.lru()
+            if(NBuff==-1):
+                print("ERREUR LRU")
+                buffer = bytearray()
+            else:
+                buffer = self.buffer_pool[NBuff]
+                buffer[:4] = struct.pack('i', pageId.FileIdx) 
+                buffer[4:8] = struct.pack('i', pageId.PageIdx)
+                buffer[8:12] = struct.pack('i', 0) 
+                buffer[12:16] = struct.pack('i', 0) 
+                buffer[16:20] = struct.pack('f', float((time.time() - self.epoch_difference)*1000))  
+                buffer1 = self.disk_manager.ReadPage(pageId)
+                buffer[20:] = buffer1
+            return NBuff
+        
+        if(self.bm_policy == "MRU"):
+            NBuff = self.mru()
+            if(NBuff==-1):
+                print("ERREUR MRU")
+                buffer = bytearray()
+            else:
+                buffer = self.buffer_pool[NBuff]
+                buffer[:4] = struct.pack('i', pageId.FileIdx) 
+                buffer[4:8] = struct.pack('i', pageId.PageIdx)
+                buffer[8:12] = struct.pack('i', 0) 
+                buffer[12:16] = struct.pack('i', 0) 
+                buffer[16:20] = struct.pack('f', float((time.time() - self.epoch_difference)*1000))   
+                buffer1 = self.disk_manager.ReadPage(pageId)
+                buffer[20:] = buffer1
+            return NBuff
+
+    def FlushBuffers(self):
+        for buffer in enumerate(self.buffer_pool):
+            self.freepage(buffer,buffer[12:16])
+
+    def lru(self):
+        indice = -1
+        oldest_time = 0
+        time1 = int((time.time() - self.epoch_difference)*1000)
+        for i in range(self.db_config.bm_buffercount):
+            #print(time1 - struct.unpack("i",page_info[12:16])[0])
+            time2 = time1 - struct.unpack("f",self.buffer_pool[i][16:20])[0]
+            if struct.unpack('i', self.buffer_pool[i][8:12])[0] == 0 and  time2 > oldest_time:
+                oldest_time = time2
+                indice = i
+        return indice 
+    
+    def mru(self):
+        # Most Recently Used replacement policy
+        indice = -1
+        newest_time = 99999999999999999999
+        time1 = int((time.time() - self.epoch_difference)*1000)
+        for i in range(self.db_config.bm_buffercount):
+            time2 = time1 - struct.unpack("f",self.buffer_pool[i][16:20])[0]
+            if struct.unpack('i', self.buffer_pool[i][8:12])[0] == 0 and  time2 < newest_time:
+                newest_time = time2
+                indice = i
+        return indice 
 
     def FreePage(self, pageId, valdirty):
-        for i, (pid, buffer, pin_count, dirty_flag) in enumerate(self.buffer_pool):
-            if pid == pageId:
-                if pin_count > 0:
-                    pin_count -= 1
-                else:
-                    print("Erreur : pin_count déjà à zéro !")
-
-                if valdirty:
-                    dirty_flag = True
-
-                self.buffer_pool[i] = (pid, buffer, pin_count, dirty_flag)
-                return 
-            
-    def SetCurrentReplacementPolicy(self, policy):
-        self.replacement_policy = policy
-        
-    def FlushBuffers(self):
-        for pid, buffer, pin_count, dirty_flag in self.buffer_pool:
-            if dirty_flag:
-                self.disk_manager.WritePage(pid, buffer)
-                dirty_flag = False
-                self.buffer_pool[i] = (pid, buffer, pin_count, dirty_flag)
-        return
+        for i, buffer in enumerate(self.buffer_pool):
+            if buffer[:4] == pageId.FileIdx and buffer[4:8] == pageId.PageIdx :
+                if buffer[8:12] == 0 and valdirty == 0:
+                    buffer [:4] = 255
+                    buffer [4:8] = 255
+                if buffer[8:12] > 0:
+                    print("cette page est en cours d'utilisation elle ne peut pas etre supprimer")
+                if buffer[8:12] == 0 and valdirty == 1:
+                    #we have to write the page calling the write function of the disk manager
+                    buffer [:4] = 255
+                    buffer [4:8] = 255
